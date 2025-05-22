@@ -1,6 +1,9 @@
 package org.example.parking;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Estacionamiento {
     private final int capacidadMaxima = 50;
@@ -14,7 +17,26 @@ public class Estacionamiento {
         // validar si existe el cliente registrado, agregar el nuevo vehiculo en la lista del cliente existente, caso contrario crear un nuevo registro
         // si el proceso es exitoso retornar TRUE
 
-        return false;
+        if (vehiculosEstacionados.size() >= capacidadMaxima) {
+            return false;
+        } else if (vehiculosEstacionados.containsKey(vehiculo.getPatente())) {
+            return false;
+        }
+
+        if (clientesRegistrados.containsKey(dni)) {
+            Cliente cliente = clientesRegistrados.get(dni);
+            cliente.agregarVehiculo(vehiculo);
+        } else {
+            Cliente cliente = new Cliente(dni, nombre);
+            cliente.agregarVehiculo(vehiculo);
+            clientesRegistrados.put(dni, cliente);
+        }
+
+        String patente = vehiculo.getPatente();
+        Ticket ticket = new Ticket(clientesRegistrados.get(dni), vehiculo);
+        vehiculosEstacionados.put(patente, ticket);
+
+        return true;
     }
 
     public Ticket retirarVehiculo(String patente) throws Exception {
@@ -22,7 +44,15 @@ public class Estacionamiento {
         // validar que exista la patente, caso contrario arrojar la exception "Vehiculo no encontrado"
         // calcular y retornar el ticket del vehiculoEstacionado (ver Ticket.marcarSalida())
 
-        return null;
+        if (!vehiculosEstacionados.containsKey(patente)) {
+            throw new Exception("Vehiculo no encontrado");
+        }
+
+        Ticket ticket = vehiculosEstacionados.get(patente);
+        ticket.marcarSalida();
+        vehiculosEstacionados.remove(patente);
+
+        return ticket;
     }
 
     public List<Ticket> listarVehiculosEstacionados() {
